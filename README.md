@@ -7,8 +7,41 @@ Cobalt is a simple PowerShell Crescendo wrapper for WinGet
 In addition to PowerShell 5.1+ and an Internet connection on a Windows machine, WinGet must also be installed. Microsoft recommends installing WinGet from the Windows Store as part of the [App Installer](https://www.microsoft.com/en-us/p/app-installer/9nblggh4nns1?activetab=pivot:overviewtab) package.
 
 ## Install Cobalt
+With NuGet
 ```PowerShell
 Install-Module Cobalt -Force
+```
+
+Without NuGet
+```
+Run install-cobalt-alluers.bat for All Users or install-cobalt-currentuser.bat for the Current User
+```
+
+## Script usage
+
+For using Cobalt in a Script add this to the top of your Script
+```powershell
+$url = curl.exe -s -I "https://github.com/craeckor/Cobalt/releases/latest" | Select-String "Location:"
+$cobalt_tag = $url -split "/" | Select-Object -Last 1
+If(!(test-path -PathType container "$ENV:APPDATA\Cobalt")) {
+    New-Item -ItemType Directory -Path "$ENV:APPDATA\Cobalt"
+    New-Item -ItemType Directory -Path "$ENV:APPDATA\Cobalt\$cobalt_tag"
+    curl.exe -o "$ENV:TEMP\cobalt.zip" "https://github.com/craeckor/Cobalt/releases/download/$cobalt_tag/cobalt.zip" -L -s
+    Expand-Archive -Path "$ENV:TEMP\cobalt.zip" -DestinationPath "$ENV:APPDATA\Cobalt\$cobalt_tag"
+    Remove-Item -Path "$ENV:TEMP\cobalt.zip" -Recurse -Force
+} elseif (!(test-path -PathType container "$ENV:APPDATA\Cobalt\$cobalt_tag")) {
+    New-Item -ItemType Directory -Path "$ENV:APPDATA\Cobalt\$cobalt_tag"
+    curl.exe -o "$ENV:TEMP\cobalt.zip" "https://github.com/craeckor/Cobalt/releases/download/$cobalt_tag/cobalt.zip" -L -s
+    Expand-Archive -Path "$ENV:TEMP\cobalt.zip" -DestinationPath "$ENV:APPDATA\Cobalt\$cobalt_tag"
+    Remove-Item -Path "$ENV:TEMP\cobalt.zip" -Recurse -Force
+} elseif (!(test-path -PathType Leaf "$ENV:APPDATA\Cobalt\$cobalt_tag\Cobalt.psm1")) {
+    Remove-Item -Path "$ENV:APPDATA\Cobalt\$cobalt_tag" -Recurse -Force
+    New-Item -ItemType Directory -Path "$ENV:APPDATA\Cobalt\$cobalt_tag"
+    curl.exe -o "$ENV:TEMP\cobalt.zip" "https://github.com/craeckor/Cobalt/releases/download/$cobalt_tag/cobalt.zip" -L -s
+    Expand-Archive -Path "$ENV:TEMP\cobalt.zip" -DestinationPath "$ENV:APPDATA\Cobalt\$cobalt_tag"
+    Remove-Item -Path "$ENV:TEMP\cobalt.zip" -Recurse -Force
+}
+Import-Module -Name "$ENV:APPDATA\Cobalt" -Global -Force
 ```
 
 ## Sample usages
